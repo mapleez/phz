@@ -27,4 +27,6 @@ struct _prog_args {
 } prog_args, 
 	*pprog_args;
 
+#	define prog_args_size (sizeof (struct _prog_args))
+
 #endif // ~ _EZ_PROG_ARGS_H_
