@@ -27,3 +27,4 @@ typedef struct _file_entity {
 
 
 #endif // ~ _EZ_FILE_ENTITY_H_
+

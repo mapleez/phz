@@ -1,4 +1,4 @@
-#ifdef _EZ_DISPLAY_H_
+#ifndef _EZ_DISPLAY_H_
 #	define _EZ_DISPLAY_H_
 
 /*

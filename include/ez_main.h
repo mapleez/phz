@@ -14,6 +14,17 @@
 #include <getopt.h>
 #include "version.h"
 
+#	define printlnf(___F, ___S) \
+		printf (___F, ___S)
+
+#	define println(___S) \
+		printf ("%s\n", ___S)
+
+/*
+   getopt string
+*/
+const* char* ez_arg_string = "aCeis";
+
 /*
    File Handle Engine to access input
    PE file data.
@@ -36,7 +47,7 @@ extern pprog_args pargs;
    All the function options this version
    provided.
 */
-extern const 
+const 
 struct option ez_longopts [] = {
 	/* 
 	   Print EAT structure, each fields and
