@@ -5,6 +5,7 @@
 
 #include <malloc.h>
 #include <memory.h>
+#include "grammar.h"
 
 struct in {
 	int mc;
@@ -24,6 +25,13 @@ struct xp {
 #	define xp_size sizeof (struct xp)
 
 void* create_xp () {
+	// xp c;
+
+	// sizeof (c);
+	// xp* m;
+	// m = malloc ()
+	// m -> x;
+
 	struct xp* res = (struct xp*) 
 		malloc (xp_size);
 	memset (res, 0, xp_size);
@@ -37,12 +45,22 @@ void* create_xp () {
 
 int main (int argc, char* argv []) {
 
-	struct xp* test_xp = create_xp ();
-	int mc = test_xp -> in_mc;
-	int mb = test_xp -> in_mb;
-	int tag = 102;
+	int i = 0;
+	for (; i < 4; i ++) {
+		printf ("%s, %d, %d, %d\n", 
+				myopt [i].arc,
+				myopt [i].x,
+				myopt [i].y,
+				myopt [i].z
+			   );
+	}
 
-	tag = mc + mb;
+	// struct xp* test_xp = create_xp ();
+	// int mc = test_xp -> in_mc;
+	// int mb = test_xp -> in_mb;
+	// int tag = 102;
+
+	// tag = mc + mb;
 
 	return 0;
 }
