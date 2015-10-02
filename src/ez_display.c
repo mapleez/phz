@@ -9,19 +9,46 @@
 
 int offset = 0;
 
+/*
+   display file information simply, about 
+   only common attributes, e.g. file size.
+*/
 void
 ez_disp_file_simple (pfile_entity _f) {
 }
 
+/*
+   display PE Export Function Table 
+   structure. one line for one function.
+*/
 void
 ez_disp_eat_info (pfile_entity _f) {
 
 }
 
+/*
+   display PE NT header (or COFF header).
+   each fields offset and value.
+*/
+void
+ez_disp_nt (pfile_entity _f) {
+	! _f && read_nt_head (_f) && 
+		die ("Cannot read NT header."
+			 "Unknown error :-("); // im so sorry for this @.o||
+	// TODO 
+}
+
+/*
+   Display PE DOS header,
+   each fields offset and value.
+*/
 void
 ez_disp_dos (pfile_entity _f) {
 #	define IMAGE_DOS_HEADER DHD
-	! _f && read_dos_head (_f);
+	! _f && read_dos_head (_f) &&
+		die ("Cannot read dos header."
+			 "Unknown error :-("); // the same above.
+
 	printf ("%08x  e_magic          wd: %04x (\"MZ\")\r\n", offsetof (DHD, e_magic), dos.e_magic);
 	printf ("%08x  e_cblp           wd: %04x\r\n", offsetof (DHD, e_cblp), dos.e_cblp);
 	printf ("%08x  e_cp             wd: %04x\r\n", offsetof (DHD, e_cp), dos.e_cp);
@@ -53,8 +80,15 @@ ez_disp_dos (pfile_entity _f) {
 	printf ("%08x  e_res2[8]        wd: %04x\r\n", offsetof (DHD, e_res2 [8]), dos.e_res2[8]);
 	printf ("%08x  e_res2[9]        wd: %04x\r\n", offsetof (DHD, e_res2 [9]), dos.e_res2[9]);
 	printf ("%08x  e_lfanew         dw: %08x\r\n", offsetof (DHD, e_lfanew), dos.e_lfanew);
+#	undef DHD
 }
 
+/*
+   Only check whether it's a 
+   valid PE format file. we just
+   check the DOS e_magic and 
+   NT Signature. @,o
+*/
 void
 ez_disp_check (pfile_entity _f) {
 	bool flag = false;
@@ -65,19 +99,25 @@ ez_disp_check (pfile_entity _f) {
 				_f -> _dos_header -> e_magic == magic && 
 				_f -> _nt_header -> Signature -> signature;
 		}
-
 	}
 
 	printf ("We checked the file:%s\n", 
 			flag ? "true" : "false");
-
 }
 
 
+/*
+   Display PE import function table.
+*/
 void
 ez_disp_iat_info (pfile_entity _f) {
 }
 
+/*
+   Display PE architecture.
+   Offset and RVA range for 
+   each header ,each segment.
+*/
 void
 ez_disp_arch (pfile_entity _f) {
 	// int tmp = 0; 
@@ -103,16 +143,37 @@ ez_disp_arch (pfile_entity _f) {
 		printf ("NT: 0x%04x ~ 0x%04x (offset)\n", 
 				nt_offset,
 				seg_head_offset - 1);
-		printf ("Sections\n"
-			"------------------------------\n");
-		// section headers 
-		// for (; i < _f -> nt_headers -> 
-		// 	FileHeader.NumberOfSections; ++ i)
-		// {
-		// 	printf ("%s: 0x%08x ~ 0x%08x "
-		// 			"(offset)\n",
-		// 			_f -> _sec_header [i].name);
-		// }
+
+		// section headers
+		printf ("Section header: 0x%04x ~ 0x%04x (offset)\n",
+				seg_head_offset,
+
+				seg_head_offset + 
+				sizeof (IMAGE_SECTION_HEADER) * 
+				(_f -> nt_headers -> FileHeader.NumberOfSections)
+		);
+
+		// printf ("Sections\n"
+		// 	"------------------------------\n");
+		// sections 
+		for (; i < _f -> nt_headers -> 
+			FileHeader.NumberOfSections; ++ i)
+		{
+			printf ("%s: 0x%08x ~ 0x%08x (offset)," 
+					"0x%08x ~ 0x%08x (RVA)\n",
+					_f -> _sec_header [i].Name, // name
+
+					_f -> _sec_header [i].PointerToRawData, // file offset start
+
+					_f -> _sec_header [i].PointerToRawData + 
+					_f -> _sec_header [i].SizeOfRawData - 1, // file offset end
+
+					_f -> _sec_header [i].VirtualAddress, // RVA start
+
+					_f -> _sec_header [i].VirtualSize +
+					_f -> _sec_header [i].VirtualAddress - 1 // RVA end
+			);
+		}
 
 	}
 }
@@ -121,6 +182,9 @@ ez_disp_arch (pfile_entity _f) {
 // ez_disp_fields (pfile_entity _f) {
 // }
 
+/*
+   You know ! ;)
+*/
 void
 ez_disp_help () {
 	printf ("PE file parser %s\n"
