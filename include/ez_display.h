@@ -25,12 +25,17 @@ extern void
 ez_disp_check (pfile_entity);
 
 extern void
-ez_disp_arch (pfile_entity);
+ez_disp_nt (pfile_entity);
 
 extern void
-ez_disp_fields (pfile_entity, pprog_args);
+ez_disp_dos (pfile_entity);
+
+extern void
+ez_disp_arch (pfile_entity);
 
 extern void
 ez_disp_help ();
 
 #endif // ~ _EZ_DISPLAY_H_
+
+

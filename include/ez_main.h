@@ -11,14 +11,9 @@
 #include "ez_file_engine.h"
 #include "ez_file_entity.h"
 #include "ez_prog_args.h"
+#include "ez_tools.h"
 #include <getopt.h>
 #include "version.h"
-
-#	define printlnf(___F, ___S) \
-		printf (___F, ___S)
-
-#	define println(___S) \
-		printf ("%s\n", ___S)
 
 /*
    getopt string
