@@ -25,6 +25,7 @@ struct xp {
 #	define xp_size sizeof (struct xp)
 
 void* create_xp () {
+	xp* c = (struct xp*) malloc (sizeof (struct xp) * 10);
 	// xp c;
 
 	// sizeof (c);

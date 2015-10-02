@@ -25,6 +25,32 @@ typedef struct _file_entity {
 } file_entity, 
 	*pfile_entity;
 
+// for import table structure
+typedef struct _thunk {
+	union {
+		uint32_t _hint;
+		uint32_t _origin;
+	} _number;
+	char* _func_name;
+	uint32_t _func_addr;
+} thunk,
+	*pthunk;
+
+typedef struct _import {
+	int _total_funcs;
+	char* _name;
+	pthunk _funcs;
+} file_import,
+	*pfile_import;
+
+
+// for export table structure
+typedef struct _export {
+	int _total_funcs;
+	int _named_funcs;
+	char* _name;
+	pthunk _funcs;
+};
 
 #endif // ~ _EZ_FILE_ENTITY_H_
 
