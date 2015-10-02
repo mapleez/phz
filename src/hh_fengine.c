@@ -47,7 +47,7 @@ int read_NT_head(pfile_entity ntHeader)
 		{   //定位NT头
 			if(SetFilePointer(hFile,dosHeader->_dos_header.e_lfanew,NULL,FILE_BEGIN)!=-1)
 			{  //读取NT头
-				ReadFile(hFile,&ntHeader->_nt_headers,sizeof(ntHeader->_nt_headers),NULL,NULL)
+				ReadFile(hFile,&ntHeader->_nt_headers,sizeof(ntHeader->_nt_headers),dwRead,NULL)
 					if(dwRead==sizeof(ntHeader->_nt_headers))
 				{
 					return dwRead;
