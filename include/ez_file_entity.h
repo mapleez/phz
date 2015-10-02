@@ -50,7 +50,8 @@ typedef struct _export {
 	int _named_funcs;
 	char* _name;
 	pthunk _funcs;
-};
+} file_export,
+	*pfile_export;
 
 #endif // ~ _EZ_FILE_ENTITY_H_
 

@@ -7,6 +7,7 @@
 #include <memory.h>
 #include "grammar.h"
 
+
 struct in {
 	int mc;
 	int mb;
@@ -22,11 +23,21 @@ struct xp {
 	int mxh;
 };
 
+#	define println(___S) \
+		printf ("%s\n", ___S)
+
+#	define die(___S) ({	\
+		println (___S);	\
+		exit (0); \
+		1; \
+	})
+
 #	define xp_size sizeof (struct xp)
 
 void* create_xp () {
-	xp* c = (struct xp*) malloc (sizeof (struct xp) * 10);
+	struct xp* c = (struct xp*) malloc (sizeof (struct xp) * 10);
 	// xp c;
+	c && die ("shit!");
 
 	// sizeof (c);
 	// xp* m;
@@ -47,6 +58,7 @@ void* create_xp () {
 int main (int argc, char* argv []) {
 
 	int i = 0;
+	create_xp ();
 	for (; i < 4; i ++) {
 		printf ("%s, %d, %d, %d\n", 
 				myopt [i].arc,

@@ -7,4 +7,9 @@
 #	define println(___S) \
 		printf ("%s\n", ___S)
 
+#	define die(___S) ({	\
+		println (___S);	\
+		exit (0); \
+	})
+
 #endif // ~ _EZ_TOOLS_H_
