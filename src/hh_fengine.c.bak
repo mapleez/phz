@@ -38,24 +38,24 @@ int read_dos_head(pfile_entity dosHeader)
 }
 int read_NT_head(pfile_entity ntHeader)
 {
-	if(ntHeader->_nt_headers==NULL)
+	if(ntHeader->_nt_header==NULL)
 	{
 		DWORD dwRead;
-	ntHeader->_nt_headers=(IMAGE_NT_HEADERS *)malloc(sizeof(IMAGE_NT_HEADERS));
+	ntHeader->_nt_header=(IMAGE_NT_HEADERS *)malloc(sizeof(IMAGE_NT_HEADERS));
 	//DWORD dwRead;
 	if(dosHeader->_dos_header.e_magic==IMAGE_DOS_SINGATURE)  //是不是有效的DOS头
 		{   //定位NT头
 			if(SetFilePointer(hFile,dosHeader->_dos_header.e_lfanew,NULL,FILE_BEGIN)!=-1)
 			{  //读取NT头
-				ReadFile(hFile,&ntHeader->_nt_headers,sizeof(ntHeader->_nt_headers),NULL,NULL)
-					if(dwRead==sizeof(ntHeader->_nt_headers))
+				ReadFile(hFile,&ntHeader->_nt_header,sizeof(ntHeader->_nt_header),NULL,NULL)
+					if(dwRead==sizeof(ntHeader->_nt_header))
 				{
 					return dwRead;
 				}
 			}
 		}
 	}
-	return sizeof(ntHeader->_nt_headers);
+	return sizeof(ntHeader->_nt_header);
 }
 int read_segment_header(pfile_entity segHeader)
 {
