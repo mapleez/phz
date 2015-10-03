@@ -14,6 +14,7 @@
 		1;	\
 	})
 #else
+#include <stdbool.h>
 bool die (const char* ___S) {
 	println (___S);
 	exit (0);

@@ -7,7 +7,7 @@ pfile_entity peHeader;  // The header of PE file
 void hh_init(char *fileName)
 {
 	char path[100];
-	strcpy(path, fileName);
+	strcpy_s(path, fileName, strnlen_s(fileName,256)+1);
 	//返回一个可访问的文件句柄
 	hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -26,7 +26,7 @@ int hh_read_dos_head(pfile_entity dosHeader)
 	if (dosHeader->_dos_header == NULL)
 	{
 		dosHeader->_dos_header = (IMAGE_DOS_HEADER *)malloc(sizeof(IMAGE_DOS_HEADER));
-		LPDWORD dwRead;
+		LPDWORD dwRead=NULL;
 		//读取DOS头
 		ReadFile(hFile, &(dosHeader->_dos_header), sizeof(dosHeader->_dos_header), dwRead, NULL);
 		if (*dwRead == sizeof(dosHeader->_dos_header))
@@ -42,7 +42,7 @@ int hh_read_NT_head(pfile_entity ntHeader)
 {
 	if (ntHeader->_nt_headers == NULL)
 	{
-		LPDWORD dwRead;
+		LPDWORD dwRead=NULL;
 		ntHeader->_nt_headers = (IMAGE_NT_HEADERS *)malloc(sizeof(IMAGE_NT_HEADERS));
 		if (peHeader->_dos_header->e_magic == IMAGE_DOS_SIGNATURE)  //是不是有效的DOS头
 		{   //定位NT头
@@ -65,7 +65,7 @@ int hh_read_segment_header(pfile_entity segHeader)
 {
 	if (segHeader->_sec_header == NULL)
 	{
-		LPDWORD dwRead;
+		LPDWORD dwRead=NULL;
 		segHeader->_sec_header = (IMAGE_SECTION_HEADER *)malloc(sizeof(IMAGE_SECTION_HEADER) * 3);
 		//定位节区头
 		if (SetFilePointer(hFile, peHeader->_dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS), NULL, FILE_BEGIN) != -1)
@@ -94,7 +94,7 @@ pfile_export hh_PrintExportTable(pfile_entity nt)
 {
 	if (nt->_nt_headers != NULL)
 	{
-		DWORD RAWOfExportTable = RVAToRAW(nt->_nt_headers->
+		DWORD RAWOfExportTable = hh_RVAToRAW(nt->_nt_headers->
 			OptionalHeader.DataDirectory[0].VirtualAddress);
 
 		DWORD sizeOfExportTable = nt->_nt_headers->

@@ -42,6 +42,7 @@
 #include <string.h>
 #include "getopt.h"
 
+
 #ifdef _WIN32
 /* Windows needs warnx().  We change the definition though:
  *  1. (another) global is defined, opterrmsg, which holds the error message
