@@ -36,8 +36,9 @@ struct xp {
 
 void* create_xp () {
 	struct xp* c = (struct xp*) malloc (sizeof (struct xp) * 10);
+	die ("shit!");
 	// xp c;
-	c && die ("shit!");
+// 	c && die ("shit!");
 
 	// sizeof (c);
 	// xp* m;

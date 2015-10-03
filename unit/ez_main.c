@@ -6,70 +6,75 @@
 */
 
 #include "ez_main.h"
-#include "hh_fengine.h"
+// #include "ez_prog_args.h"
 #include <getopt.h>
 
-pfile_entity fentity;
+// pfile_entity fentity;
+// pprog_args pargs;
+
 
 static void main_dispose ();
 
-static void main_dispose (pfile_entity _f) {
-	disponse (_f);
+
+static void main_dispose (/*pfile_entity _f*/) {
+	// disponse (_f);
 }
 
 int main (int argc, char* argv []) {
 
 	int arg = 0;
 	char* filename = NULL;
+	// main_init_args ();
 	while ((arg = 
 		getopt_long (argc, argv, ez_arg_string,
 			ez_longopts, NULL)) != -1) {
 		switch (arg) {
 			case 'a': 
 				filename = argv [optind];
-				init (filename);
-				ez_disp_arch (fentity);
+				// init (filename);
+				// ez_disp_arch (fentity);
 				break;
 
 			case 'C':
 				filename = argv [optind];
-				init (filename);
-				ez_disp_check (fentity);
+				// init (filename);
+				// ez_disp_check (fentity);
 				break;
 
 			case 'e':
 				filename = argv [optind];
-				init (filename);
-				ez_disp_eat_info (fentity);
+				// init (filename);
+				// ez_disp_eat_info (fentity);
 				break;
 
 			case 'i':
 				filename = argv [optind];
-				init (filename);
-				ez_disp_iat_info (fentity);
+				// init (filename);
+				// ez_disp_iat_info (fentity);
 				break;
 
 			case 's':
 				filename = argv [optind];
-				init (filename);
-				ez_disp_file_simple (fentity);
+				// init (filename);
+				// ez_disp_file_simple (fentity);
 				break;
 
 			case 'h':
 				filename = argv [optind];
-				init (filename);
-				ez_disp_help ();
+				// init (filename);
+				// ez_disp_help ();
 				break;
 
 			default:
-				filename = argv [optind];
-				init (filename);
-				ez_disp_dos (fentity);
-				ez_disp_nt (fentity);
+				die ("Invalid options:");
+				// filename = argv [optind];
+				// init (filename);
+				// ez_disp_dos (fentity);
+				// ez_disp_nt (fentity);
 				break;
 		}
 	}
 
-	main_dispose (fentity);
+	main_dispose (/*fentity*/);
 	return 0;
 }
