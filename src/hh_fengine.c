@@ -4,7 +4,7 @@
 
 HANDLE hFile;  //可访问的文件句柄
 pfile_entity peHeader;  // The header of PE file
-void init(char *fileName)
+void hh_init(char *fileName)
 {
 	char path[100];
 	strcpy(path, fileName);
@@ -21,7 +21,7 @@ void init(char *fileName)
 	peHeader->_sec_header = (IMAGE_SECTION_HEADER *)malloc(sizeof(IMAGE_SECTION_HEADER) * 3);
 }
 
-int read_dos_head(pfile_entity dosHeader)
+int hh_read_dos_head(pfile_entity dosHeader)
 {
 	if (dosHeader->_dos_header == NULL)
 	{
@@ -38,7 +38,7 @@ int read_dos_head(pfile_entity dosHeader)
 	return sizeof(dosHeader->_dos_header);
 }
 
-int read_NT_head(pfile_entity ntHeader)
+int hh_read_NT_head(pfile_entity ntHeader)
 {
 	if (ntHeader->_nt_headers == NULL)
 	{
@@ -61,7 +61,7 @@ int read_NT_head(pfile_entity ntHeader)
 	return sizeof(ntHeader->_nt_headers);
 }
 
-int read_segment_header(pfile_entity segHeader)
+int hh_read_segment_header(pfile_entity segHeader)
 {
 	if (segHeader->_sec_header == NULL)
 	{
@@ -80,7 +80,7 @@ int read_segment_header(pfile_entity segHeader)
 	}
 	return sizeof(segHeader->_sec_header);
 }
-void desponse(pfile_entity header)
+void hh_desponse(pfile_entity header)
 {
 	free(header->_dos_header);
 	free(header->_nt_headers);
@@ -90,7 +90,7 @@ void desponse(pfile_entity header)
 	free(peHeader->_sec_header);
 }
 
-pfile_export PrintExportTable(pfile_entity nt)
+pfile_export hh_PrintExportTable(pfile_entity nt)
 {
 	if (nt->_nt_headers != NULL)
 	{
@@ -122,7 +122,7 @@ pfile_export PrintExportTable(pfile_entity nt)
 			exTable->_funcs = export_function;
 
 			//load export table 
-			SetFilePointer(hFile, RVAToRAW(export_directory->Name), NULL, FILE_BEGIN) != -1 && 
+			SetFilePointer(hFile, hh_RVAToRAW(export_directory->Name), NULL, FILE_BEGIN) != -1 && 
 				ReadFile(hFile, &exTable->_name, 40, NULL, NULL);
 			exTable->_total_funcs = export_directory->NumberOfFunctions;
 			exTable->_named_funcs = export_directory->NumberOfNames;
@@ -130,18 +130,18 @@ pfile_export PrintExportTable(pfile_entity nt)
 			for (int i = 0; i < export_directory->NumberOfFunctions; i++)
 			{
 				//load thunk
-				SetFilePointer(hFile, RVAToRAW(export_directory->AddressOfFunctions), NULL, FILE_BEGIN) != -1 &&
+				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfFunctions), NULL, FILE_BEGIN) != -1 &&
 					ReadFile(hFile, &export_function->_func_addr, export_directory->NumberOfFunctions, NULL, NULL);
-				SetFilePointer(hFile, RVAToRAW(export_directory->AddressOfNames), NULL, FILE_BEGIN) != -1 &&
+				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfNames), NULL, FILE_BEGIN) != -1 &&
 					ReadFile(hFile, &export_function->_func_name, export_directory->NumberOfNames, NULL, NULL);
-				SetFilePointer(hFile, RVAToRAW(export_directory->AddressOfNameOrdinals), NULL, FILE_BEGIN) != -1 &&
+				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfNameOrdinals), NULL, FILE_BEGIN) != -1 &&
 					ReadFile(hFile, &export_function->_number._origin, export_directory->NumberOfNames, NULL, NULL);
 			}
 		}
 	}
 }
 //RVAToRAW
-DWORD RVAToRAW(DWORD virtualAddress)
+DWORD hh_RVAToRAW(DWORD virtualAddress)
 {
 	DWORD RAW;
 	//The numbers of section
