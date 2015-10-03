@@ -6,14 +6,16 @@
 */
 
 #include "ez_main.h"
+#include "ez_display.h"
 #include "hh_fengine.h"
-#include <getopt.h>
+#include "getopt.h"
 
 pfile_entity fentity;
 
 static void main_dispose ();
 
 static void main_dispose (pfile_entity _f) {
+	// from hh_fengine.h
 	disponse (_f);
 }
 

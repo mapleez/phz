@@ -4,12 +4,12 @@
 
 const char* version = "v1.0";
 
-const* char* author = {
+char* const author [] = {
 	"ez",
 	"hh"
 };
 
-const* char* email = {
+char* const email [] = {
 	"kukunanhai_5207@126.com",
 	"252689563@qq.com"
 };
