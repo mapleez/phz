@@ -8,12 +8,12 @@
  *     varibles, handle arguments.
 */
 
-#include "ez_file_engine.h"
-#include "ez_file_entity.h"
+// #include "ez_file_engine.h"
+// #include "ez_file_entity.h"
 // #include "ez_prog_args.h"
 #include "ez_tools.h"
 #include <getopt.h>
-#include "version.h"
+// #include "version.h"
 
 /*
    getopt string
@@ -30,7 +30,7 @@ const char* ez_arg_string = "aCehis";
    Stored the hole data read from 
    file stream. Formatted data.
 */
-extern pfile_entity fentity;
+// extern pfile_entity fentity;
 
 /*
    Stored the analysis result of input

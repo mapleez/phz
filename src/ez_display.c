@@ -30,6 +30,37 @@ ez_disp_file_simple (pfile_entity _f) {
 */
 void
 ez_disp_eat_info (pfile_entity _f) {
+	pfile_export exp = NULL;
+	int i = 0;
+	_f && read_dos_head (_f) &&
+		read_NT_head (_f) &&
+		read_segment_header (_f) ||
+		die ("Cannot read file data."
+			 "Unknown error.");
+	// pfile_export  printexporttable (pfile_entity _f);
+	if (! (exp = 
+			printexporttable (_f)))
+		die ("Cannot read import tables."
+			 "Unknown error.");
+	printf ("Export tables %s:\n",
+			exp -> _name);
+// 	for (; i <= imp_num; ++ i) {
+// 		pfile_import lib = &(imp [i]);
+// 		println ("%d. %s\n",
+// 				i + 1, 
+// 				lib -> _name);
+	// int f_idx = 0;
+	for (; i < exp -> _total_funcs; 
+			++ i)
+	{
+		pthunk func = exp -> _funcs + i;
+		printf ("  %d. 0x%08x 0x%04x  %s\n"
+				i + 1, // NO
+				func -> _func_addr, // function address
+				func -> _number._origin,// hint
+				func -> _func_name);
+	}
+//	}
 }
 
 /*
@@ -43,7 +74,7 @@ ez_disp_nt (pfile_entity _f) {
 		opt_offset = 0;
 	uint16_t opt_magic = 0;
 	! _f && read_dos_head (_f) && 
-		read_nt_head (_f) || 
+		read_NT_head (_f) || 
 		die ("Cannot read NT header."
 			 "Unknown error :-("); // im so sorry for this @.o||
 	nt_offset = (int) _f -> _dos_header -> e_lfanew;
@@ -163,7 +194,7 @@ ez_disp_check (pfile_entity _f) {
 	bool flag = false;
 	if (! _f) {
 		if (read_dos_head (_f) && 
-				read_nt_head (_f)) {
+				read_NT_head (_f)) {
 			flag = 
 				_f -> _dos_header -> e_magic == magic && 
 				_f -> _nt_header -> Signature -> signature;
@@ -180,6 +211,38 @@ ez_disp_check (pfile_entity _f) {
 */
 void
 ez_disp_iat_info (pfile_entity _f) {
+	pfile_import imp = NULL;
+	int imp_num = 0,
+		i = 0;
+	_f && read_dos_head (_f) &&
+		read_NT_head (_f) &&
+		read_segment_header (_f) ||
+		die ("Cannot read file data."
+			 "Unknown error.");
+	// pfile_import read_import_tables (pfile_entity _f);
+	if (! (imp = 
+			read_import_tables (_f, &imp_num)))
+		die ("Cannot read import tables."
+			 "Unknown error.");
+	printf ("Import tables, total %d libs:\n",
+			imp_num);
+	for (; i <= imp_num; ++ i) {
+		pfile_import lib = &(imp [i]);
+		println ("%d. %s\n",
+				i + 1, 
+				lib -> _name);
+		int f_idx = 0;
+		for (; f_idx < lib -> _total_funcs; 
+				++ f_idx)
+		{
+			pthunk func = lib -> _funcs + f_idx;
+			printf ("  %d. 0x%08x 0x%04x  %s\n"
+					f_idx + 1, // NO
+					func -> _func_addr, // function address
+					func -> _number._hint // hint
+					func -> _func_name);
+		}
+	}
 }
 
 /*
