@@ -6,13 +6,20 @@
 */
 
 #include "ez_display.h"
+#include "hh_fengine.h"
 #include "ez_tools.h"
+#include "version.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+#ifndef _WIN32
 #include <stdbool.h>
+#endif
+
 #include <stddef.h>
 #include <windows.h>
+// #include <WinNT.h>
 
 int offset = 0;
 
@@ -54,7 +61,7 @@ ez_disp_eat_info (pfile_entity _f) {
 			++ i)
 	{
 		pthunk func = exp -> _funcs + i;
-		printf ("  %d. 0x%08x 0x%04x  %s\n"
+		printf ("  %d. 0x%08x 0x%04x  %s\n",
 				i + 1, // NO
 				func -> _func_addr, // function address
 				func -> _number._origin,// hint
@@ -85,7 +92,8 @@ ez_disp_nt (pfile_entity _f) {
 	// nt header
 	println ("NT header:");
 	printf ("%08x  Signature           dw: %04x\n", 
-				offsetof (IMAGE_NT_HEADERS, Signature) + nt_offset, nt.Signature);
+				offsetof (IMAGE_NT_HEADERS, Signature) + nt_offset, 
+				_f -> _nt_headers -> Signature);
 	// file header
 #	define IFH IMAGE_FILE_HEADER 
 #	define IOH IMAGE_OPTIONAL_HEADER
@@ -111,8 +119,8 @@ ez_disp_nt (pfile_entity _f) {
 	printf ("    %08x  BaseOfCode                   dw: %08x\n", opt_offset + offsetof (IOH, BaseOfCode), _f -> _opt_header.BaseOfCode);
 	printf ("    %08x  BaseOfData                   dw: %08x\n", opt_offset + offsetof (IOH, BaseOfData), _f -> _opt_header.BaseOfData);
 	printf ("    %08x  ImageBase                    dw: %08x\n", opt_offset + offsetof (IOH, ImageBase), _f -> _opt_header.ImageBase);
-	printf ("    %08x  SectionAlignment             dw: %08x\n", opt_offset + offsetof (IOH, SectionAligment), _f -> _opt_header.SectionAlignment);
-	printf ("    %08x  FileAlignment                dw: %08x\n", opt_offset + offsetof (IOH, FileAligment), _f -> _opt_header.FileAlignment);
+	printf ("    %08x  SectionAlignment             dw: %08x\n", opt_offset + offsetof (IOH, SectionAlignment), _f -> _opt_header.SectionAlignment);
+	printf ("    %08x  FileAlignment                dw: %08x\n", opt_offset + offsetof (IOH, FileAlignment), _f -> _opt_header.FileAlignment);
 	printf ("    %08x  MajorOperatingSystemVersion  wd: %04x\n", opt_offset + offsetof (IOH, MajorOperatingSystemVersion), _f -> _opt_header.MajorOperatingSystemVersion);
 	printf ("    %08x  MinorOperatingSystemVersion  wd: %04x\n", opt_offset + offsetof (IOH, MinorOperatingSystemVersion), _f -> _opt_header.MinorOperatingSystemVersion);
 	printf ("    %08x  MajorImageVersion            wd: %04x\n", opt_offset + offsetof (IOH, MajorImageVersion), _f -> _opt_header.MajorImageVersion);
@@ -130,7 +138,7 @@ ez_disp_nt (pfile_entity _f) {
 	printf ("    %08x  SizeOfHeapReserve            dw: %08x\n", opt_offset + offsetof (IOH, SizeOfHeapReserve), _f -> _opt_header.SizeOfHeapReserve);
 	printf ("    %08x  SizeOfHeapCommit             dw: %08x\n", opt_offset + offsetof (IOH, SizeOfHeapCommit), _f -> _opt_header.SizeOfHeapCommit);
 	printf ("    %08x  LoaderFlags                  dw: %08x\n", opt_offset + offsetof (IOH, LoaderFlags), _f -> _opt_header.LoaderFlags);
-	printf ("    %08x  NumberOfRvaAndSizes          dw: %08x\n", opt_offset + offsetof (IOH, NumberOfRvaAndSize), _f -> _opt_header.NumberOfRvaAndSizes);
+	printf ("    %08x  NumberOfRvaAndSizes          dw: %08x\n", opt_offset + offsetof (IOH, NumberOfRvaAndSizes), _f -> _opt_header.NumberOfRvaAndSizes);
 
 #	undef IFH   
 #	undef IOH
@@ -147,39 +155,39 @@ ez_disp_dos (pfile_entity _f) {
 	! _f && read_dos_head (_f) || 
 		die ("Cannot read dos header."
 			 "Unknown error :-("); // the same above.
-	println ("DOS header:\n")
+	println ("DOS header:");
 
-	printf ("%08x  e_magic          wd: %04x (\"MZ\")\r\n", offsetof (DHD, e_magic), dos.e_magic);
-	printf ("%08x  e_cblp           wd: %04x\n", offsetof (DHD, e_cblp), dos.e_cblp);
-	printf ("%08x  e_cp             wd: %04x\n", offsetof (DHD, e_cp), dos.e_cp);
-	printf ("%08x  e_crlc           wd: %04x\n", offsetof (DHD, e_crlc), dos.e_crlc);
-	printf ("%08x  e_cparhdr        wd: %04x\n", offsetof (DHD, e_cparhdr), dos.e_cparhdr);
-	printf ("%08x  e_minalloc       wd: %04x\n", offsetof (DHD, e_minalloc), dos.e_minalloc);
-	printf ("%08x  e_maxalloc       wd: %04x\n", offsetof (DHD, e_maxalloc), dos.e_maxalloc);
-	printf ("%08x  e_ss             wd: %04x\n", offsetof (DHD, e_ss), dos.e_ss);
-	printf ("%08x  e_sp             wd: %04x\n", offsetof (DHD, e_sp), dos.e_sp);
-	printf ("%08x  e_csum           wd: %04x\n", offsetof (DHD, e_csum), dos.e_csum);
-	printf ("%08x  e_ip             wd: %04x\n", offsetof (DHD, e_ip), dos.e_ip);
-	printf ("%08x  e_cs             wd: %04x\n", offsetof (DHD, e_cs), dos.e_cs);
-	printf ("%08x  e_lfarlc         wd: %04x\n", offsetof (DHD, e_lfarlc), dos.e_lfarlc);
-	printf ("%08x  e_ovno           wd: %04x\n", offsetof (DHD, e_ovno), dos.e_ovno);
-	printf ("%08x  e_res[0]         wd: %04x\n", offsetof (DHD, e_res [0]), dos.e_res [0]);
-	printf ("%08x  e_res[1]         wd: %04x\n", offsetof (DHD, e_res [1]), dos.e_res [1]);
-	printf ("%08x  e_res[2]         wd: %04x\n", offsetof (DHD, e_res [2]), dos.e_res[2]);
-	printf ("%08x  e_res[3]         wd: %04x\n", offsetof (DHD, e_res [3]), dos.e_res[3]);
-	printf ("%08x  e_oemid          wd: %04x\n", offsetof (DHD, e_oemid), dos.e_oemid);
-	printf ("%08x  e_oeminfo        wd: %04x\n", offsetof (DHD, e_oeminfo), dos.e_oeminfo);
-	printf ("%08x  e_res2[0]        wd: %04x\n", offsetof (DHD, e_res2 [0]), dos.e_res2[0]);
-	printf ("%08x  e_res2[1]        wd: %04x\n", offsetof (DHD, e_res2 [1]), dos.e_res2[1]);
-	printf ("%08x  e_res2[2]        wd: %04x\n", offsetof (DHD, e_res2 [2]), dos.e_res2[2]);
-	printf ("%08x  e_res2[3]        wd: %04x\n", offsetof (DHD, e_res2 [3]), dos.e_res2[3]);
-	printf ("%08x  e_res2[4]        wd: %04x\n", offsetof (DHD, e_res2 [4]), dos.e_res2[4]);
-	printf ("%08x  e_res2[5]        wd: %04x\n", offsetof (DHD, e_res2 [5]), dos.e_res2[5]);
-	printf ("%08x  e_res2[6]        wd: %04x\n", offsetof (DHD, e_res2 [6]), dos.e_res2[6]);
-	printf ("%08x  e_res2[7]        wd: %04x\n", offsetof (DHD, e_res2 [7]), dos.e_res2[7]);
-	printf ("%08x  e_res2[8]        wd: %04x\n", offsetof (DHD, e_res2 [8]), dos.e_res2[8]);
-	printf ("%08x  e_res2[9]        wd: %04x\n", offsetof (DHD, e_res2 [9]), dos.e_res2[9]);
-	printf ("%08x  e_lfanew         dw: %08x\n", offsetof (DHD, e_lfanew), dos.e_lfanew);
+	printf ("%08x  e_magic          wd: %04x (\"MZ\")\r\n", offsetof (DHD, e_magic), _f -> _dos_header -> e_magic);
+	printf ("%08x  e_cblp           wd: %04x\n", offsetof (DHD, e_cblp), _f -> _dos_header -> e_cblp);
+	printf ("%08x  e_cp             wd: %04x\n", offsetof (DHD, e_cp), _f -> _dos_header -> e_cp);
+	printf ("%08x  e_crlc           wd: %04x\n", offsetof (DHD, e_crlc), _f -> _dos_header -> e_crlc);
+	printf ("%08x  e_cparhdr        wd: %04x\n", offsetof (DHD, e_cparhdr), _f -> _dos_header -> e_cparhdr);
+	printf ("%08x  e_minalloc       wd: %04x\n", offsetof (DHD, e_minalloc), _f -> _dos_header -> e_minalloc);
+	printf ("%08x  e_maxalloc       wd: %04x\n", offsetof (DHD, e_maxalloc), _f -> _dos_header -> e_maxalloc);
+	printf ("%08x  e_ss             wd: %04x\n", offsetof (DHD, e_ss), _f -> _dos_header -> e_ss);
+	printf ("%08x  e_sp             wd: %04x\n", offsetof (DHD, e_sp), _f -> _dos_header -> e_sp);
+	printf ("%08x  e_csum           wd: %04x\n", offsetof (DHD, e_csum), _f -> _dos_header -> e_csum);
+	printf ("%08x  e_ip             wd: %04x\n", offsetof (DHD, e_ip), _f -> _dos_header -> e_ip);
+	printf ("%08x  e_cs             wd: %04x\n", offsetof (DHD, e_cs), _f -> _dos_header -> e_cs);
+	printf ("%08x  e_lfarlc         wd: %04x\n", offsetof (DHD, e_lfarlc), _f -> _dos_header -> e_lfarlc);
+	printf ("%08x  e_ovno           wd: %04x\n", offsetof (DHD, e_ovno), _f -> _dos_header -> e_ovno);
+	printf ("%08x  e_res[0]         wd: %04x\n", offsetof (DHD, e_res [0]), _f -> _dos_header -> e_res [0]);
+	printf ("%08x  e_res[1]         wd: %04x\n", offsetof (DHD, e_res [1]), _f -> _dos_header -> e_res [1]);
+	printf ("%08x  e_res[2]         wd: %04x\n", offsetof (DHD, e_res [2]), _f -> _dos_header -> e_res[2]);
+	printf ("%08x  e_res[3]         wd: %04x\n", offsetof (DHD, e_res [3]), _f -> _dos_header -> e_res[3]);
+	printf ("%08x  e_oemid          wd: %04x\n", offsetof (DHD, e_oemid), _f -> _dos_header -> e_oemid);
+	printf ("%08x  e_oeminfo        wd: %04x\n", offsetof (DHD, e_oeminfo), _f -> _dos_header -> e_oeminfo);
+	printf ("%08x  e_res2[0]        wd: %04x\n", offsetof (DHD, e_res2 [0]), _f -> _dos_header -> e_res2[0]);
+	printf ("%08x  e_res2[1]        wd: %04x\n", offsetof (DHD, e_res2 [1]), _f -> _dos_header -> e_res2[1]);
+	printf ("%08x  e_res2[2]        wd: %04x\n", offsetof (DHD, e_res2 [2]), _f -> _dos_header -> e_res2[2]);
+	printf ("%08x  e_res2[3]        wd: %04x\n", offsetof (DHD, e_res2 [3]), _f -> _dos_header -> e_res2[3]);
+	printf ("%08x  e_res2[4]        wd: %04x\n", offsetof (DHD, e_res2 [4]), _f -> _dos_header -> e_res2[4]);
+	printf ("%08x  e_res2[5]        wd: %04x\n", offsetof (DHD, e_res2 [5]), _f -> _dos_header -> e_res2[5]);
+	printf ("%08x  e_res2[6]        wd: %04x\n", offsetof (DHD, e_res2 [6]), _f -> _dos_header -> e_res2[6]);
+	printf ("%08x  e_res2[7]        wd: %04x\n", offsetof (DHD, e_res2 [7]), _f -> _dos_header -> e_res2[7]);
+	printf ("%08x  e_res2[8]        wd: %04x\n", offsetof (DHD, e_res2 [8]), _f -> _dos_header -> e_res2[8]);
+	printf ("%08x  e_res2[9]        wd: %04x\n", offsetof (DHD, e_res2 [9]), _f -> _dos_header -> e_res2[9]);
+	printf ("%08x  e_lfanew         dw: %08x\n", offsetof (DHD, e_lfanew), _f -> _dos_header -> e_lfanew);
 #	undef DHD
 }
 
@@ -196,12 +204,12 @@ ez_disp_check (pfile_entity _f) {
 		if (read_dos_head (_f) && 
 				read_NT_head (_f)) {
 			flag = 
-				_f -> _dos_header -> e_magic == magic && 
-				_f -> _nt_header -> Signature -> signature;
+				_f -> _dos_header -> e_magic == IMAGE_DOS_SIGNATURE && 
+				_f -> _nt_headers -> Signature == IMAGE_NT_SIGNATURE;
 		}
 	}
 
-	printf ("We checked the file:%s\n", 
+	printf ("We checked the file %s\n", 
 			flag ? "true" : "false");
 }
 
@@ -227,19 +235,19 @@ ez_disp_iat_info (pfile_entity _f) {
 	printf ("Import tables, total %d libs:\n",
 			imp_num);
 	for (; i <= imp_num; ++ i) {
+		int f_idx = 0;
 		pfile_import lib = &(imp [i]);
-		println ("%d. %s\n",
+		printf ("%d. %s\n",
 				i + 1, 
 				lib -> _name);
-		int f_idx = 0;
 		for (; f_idx < lib -> _total_funcs; 
 				++ f_idx)
 		{
 			pthunk func = lib -> _funcs + f_idx;
-			printf ("  %d. 0x%08x 0x%04x  %s\n"
+			printf ("  %d. 0x%08x 0x%04x  %s\n",
 					f_idx + 1, // NO
 					func -> _func_addr, // function address
-					func -> _number._hint // hint
+					func -> _number._hint, // hint
 					func -> _func_name);
 		}
 	}
@@ -258,7 +266,7 @@ ez_disp_arch (pfile_entity _f) {
 			 seg_head_offset = 0;
 	int i = 0;
 	if (read_dos_head (_f) &&
-		read_nt_head (_f) &&
+		read_NT_head (_f) &&
 		read_segment_header (_f)) 
 	{
 		// dos header
@@ -266,8 +274,8 @@ ez_disp_arch (pfile_entity _f) {
 
 		nt_offset = (uint32_t) _f -> _dos_header ->
 			e_lfanew;
-		opt_size = (uint32_t) _f -> nt_headers -> 
-			FileHeader.SizeofOptionalHeader;
+		opt_size = (uint32_t) _f -> _nt_headers -> 
+			FileHeader.SizeOfOptionalHeader;
 		seg_head_offset = opt_size + 4 + 
 			sizeof (IMAGE_FILE_HEADER);
 
@@ -288,7 +296,7 @@ ez_disp_arch (pfile_entity _f) {
 		// printf ("Sections\n"
 		// 	"------------------------------\n");
 		// sections 
-		for (; i < _f -> nt_headers -> 
+		for (; i < _f -> _nt_headers -> 
 			FileHeader.NumberOfSections; ++ i)
 		{
 			printf ("%s: 0x%08x ~ 0x%08x (offset)," 
@@ -302,7 +310,7 @@ ez_disp_arch (pfile_entity _f) {
 
 					_f -> _sec_header [i].VirtualAddress, // RVA start
 
-					_f -> _sec_header [i].VirtualSize +
+					_f -> _sec_header [i].Misc.VirtualSize +
 					_f -> _sec_header [i].VirtualAddress - 1 // RVA end
 			);
 		}

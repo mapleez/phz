@@ -10,7 +10,7 @@
  *			structures.
 */
 
-#include <winnt.h>
+#include <windows.h>
 #include <stdint.h>
 
 typedef struct _file_entity {
