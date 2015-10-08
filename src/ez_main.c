@@ -10,15 +10,20 @@
 #include "hh_fengine.h"
 #include "getopt.h"
 
+// File entity, a file object, 
+// holding PE file data;
 pfile_entity fentity;
 
-static void main_dispose ();
+static 
+void main_dispose ();
 
-static void main_dispose (pfile_entity _f) {
-	// from hh_fengine.h
+// dispose all the resources.
+static 
+void main_dispose (pfile_entity _f) {
 	hh_desponse (_f);
 }
 
+// Main entry point
 int main (int argc, char* argv []) {
 
 	int arg = 0;
@@ -29,45 +34,57 @@ int main (int argc, char* argv []) {
 		switch (arg) {
 			case 'a': 
 				filename = argv [optind];
+				if (! filename)
+					die ("Maybe you'd provide filename.");
 				hh_init (filename);
 				ez_disp_arch (fentity);
 				break;
 
 			case 'C':
 				filename = argv [optind];
+				if (! filename)
+					die ("Maybe you'd provide filename.");
 				hh_init (filename);
 				ez_disp_check (fentity);
 				break;
 
 			case 'e':
 				filename = argv [optind];
+				if (! filename)
+					die ("Maybe you'd provide filename.");
 				hh_init (filename);
 				ez_disp_eat_info (fentity);
 				break;
 
 			case 'i':
 				filename = argv [optind];
+				if (! filename)
+					die ("Maybe you'd provide filename.");
 				hh_init (filename);
 				ez_disp_iat_info (fentity);
 				break;
 
 			case 's':
 				filename = argv [optind];
+				if (! filename)
+					die ("Maybe you'd provide filename.");
 				hh_init (filename);
 				ez_disp_file_simple (fentity);
 				break;
 
 			case 'h':
-				filename = argv [optind];
-				hh_init (filename);
 				ez_disp_help ();
 				break;
 
 			default:
 				filename = argv [optind];
-				hh_init (filename);
-				ez_disp_dos (fentity);
-				ez_disp_nt (fentity);
+				if (! filename)
+					ez_disp_help ();
+				else {
+					hh_init (filename);
+					ez_disp_dos (fentity);
+					ez_disp_nt (fentity);
+				}
 				break;
 		}
 	}

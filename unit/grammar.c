@@ -7,6 +7,15 @@
 #include <memory.h>
 #include "grammar.h"
 
+#define DBG
+
+#if !defined (__cplusplus) && !defined (DBG)
+void it () {
+	printf ("%s\n", 
+			"defined __cplusplus, DBG");
+}
+#endif
+
 
 struct in {
 	int mc;
@@ -59,15 +68,21 @@ void* create_xp () {
 int main (int argc, char* argv []) {
 
 	int i = 0;
-	create_xp ();
-	for (; i < 4; i ++) {
-		printf ("%s, %d, %d, %d\n", 
-				myopt [i].arc,
-				myopt [i].x,
-				myopt [i].y,
-				myopt [i].z
-			   );
-	}
+	// create_xp ();
+	// for (; i < 4; i ++) {
+	// 	printf ("%s, %d, %d, %d\n", 
+	// 			myopt [i].arc,
+	// 			myopt [i].x,
+	// 			myopt [i].y,
+	// 			myopt [i].z
+	// 		   );
+	// }
+#if ! defined (__cplusplus) && ! defined (DBG)
+	it ();
+#else
+	printf ("%s\n", "not defined");
+#endif
+
 
 	// struct xp* test_xp = create_xp ();
 	// int mc = test_xp -> in_mc;

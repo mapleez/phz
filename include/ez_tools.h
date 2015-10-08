@@ -3,19 +3,17 @@
 
 #include <stdio.h>
 
-// #	define printlnf(___F, ___S) \
-//		printf (___F, ___S)
-
 #	define println(___S) \
 		printf ("%s\n", ___S)
 
-#ifndef _WIN32
+#if defined (_WIN32) || defined (__cplusplus)
 #	define die(___S) ({	\
 		println (___S);	\
 		exit (0); \
 		1;	\
 	})
 #else
+
 extern 
 int die (const char*);
 #endif

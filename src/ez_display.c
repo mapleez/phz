@@ -13,18 +13,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifndef _WIN32
+#ifndef __cplusplus
 #include <stdbool.h>
 #endif
 
 #include <stddef.h>
 #include <windows.h>
-// #include <WinNT.h>
 
-int offset = 0;
 
 /*
-   display file information simply, about 
+   Display file information simply, about 
    only common attributes, e.g. file size.
 */
 void
@@ -67,7 +65,6 @@ ez_disp_eat_info (pfile_entity _f) {
 				func -> _number._origin,// hint
 				func -> _func_name);
 	}
-//	}
 }
 
 /*
@@ -105,9 +102,11 @@ ez_disp_nt (pfile_entity _f) {
 	printf ("    %08x  PointerToSymbolTable         dw: %08x\n", opt_offset + offsetof (IFH, PointerToSymbolTable), _f -> _file_header.PointerToSymbolTable);
 	printf ("    %08x  NumberOfSymbols              dw: %08x\n", opt_offset + offsetof (IFH, NumberOfSymbols), _f -> _file_header.NumberOfSymbols);
 	printf ("    %08x  SizeOfOptionalHeader         wd: %04x\n", opt_offset + offsetof (IFH, SizeOfOptionalHeader), _f -> _file_header.SizeOfOptionalHeader);
-	// optional header
-	// In this version we just 
-	// provide optional 32 bits analysis
+
+	/* optional header
+	 * In this version we just 
+	 * provide optional 32 bits analysis
+	*/
 	println ("--> OptionalHeader:");
 	printf ("    %08x  Magic                        wd: %04x\n", opt_offset + offsetof (IOH, Magic), _f -> _opt_header.Magic);
 	printf ("    %08x  MajorLinkerVersion           b : %02x\n", opt_offset + offsetof (IOH, MajorLinkerVersion), _f -> _opt_header.MajorLinkerVersion);
@@ -142,7 +141,6 @@ ez_disp_nt (pfile_entity _f) {
 
 #	undef IFH   
 #	undef IOH
-// #	undef IOH
 }
 
 /*
@@ -318,9 +316,6 @@ ez_disp_arch (pfile_entity _f) {
 	}
 }
 
-// void
-// ez_disp_fields (pfile_entity _f) {
-// }
 
 /*
    You know ! ;)
