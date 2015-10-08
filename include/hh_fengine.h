@@ -9,4 +9,6 @@ int hh_read_segment_header(pfile_entity segHeader);
 void hh_desponse(pfile_entity free);
 pfile_export hh_PrintExportTable(pfile_entity nt);
 DWORD hh_RVAToRAW(DWORD virtualAddress);
+// ez
+pfile_import ez_read_import_tables (pfile_entity, int*);
 #endif //~ _FENGINE_H_

@@ -16,7 +16,7 @@ static void main_dispose ();
 
 static void main_dispose (pfile_entity _f) {
 	// from hh_fengine.h
-	disponse (_f);
+	hh_desponse (_f);
 }
 
 int main (int argc, char* argv []) {
@@ -29,43 +29,43 @@ int main (int argc, char* argv []) {
 		switch (arg) {
 			case 'a': 
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_arch (fentity);
 				break;
 
 			case 'C':
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_check (fentity);
 				break;
 
 			case 'e':
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_eat_info (fentity);
 				break;
 
 			case 'i':
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_iat_info (fentity);
 				break;
 
 			case 's':
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_file_simple (fentity);
 				break;
 
 			case 'h':
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_help ();
 				break;
 
 			default:
 				filename = argv [optind];
-				init (filename);
+				hh_init (filename);
 				ez_disp_dos (fentity);
 				ez_disp_nt (fentity);
 				break;

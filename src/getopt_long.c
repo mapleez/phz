@@ -64,7 +64,8 @@ static void warnx(
   va_list ap;
   va_start(ap, fmt);
   if (fmt != NULL) {
-    _vsnprintf(opterrmsg, 128, fmt, ap);
+	_vsnprintf (opterrmsg, 128, fmt, ap);
+    // _vsnprintf_s (opterrmsg, 128, fmt, ap);
   } else {
     opterrmsg[0]='\0';
   }

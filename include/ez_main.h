@@ -10,7 +10,6 @@
 
 #include "hh_fengine.h"
 #include "ez_file_entity.h"
-// #include "ez_prog_args.h"
 #include "ez_tools.h"
 #include "getopt.h"
 #include "version.h"
@@ -18,7 +17,8 @@
 /*
    getopt string
 */
-const char* ez_arg_string = "aCehis";
+// const char* ez_arg_string = "aCehis";
+#	define ez_arg_string  "aCehis"
 
 /*
    File Handle Engine to access input

@@ -39,14 +39,14 @@ void
 ez_disp_eat_info (pfile_entity _f) {
 	pfile_export exp = NULL;
 	int i = 0;
-	_f && read_dos_head (_f) &&
-		read_NT_head (_f) &&
-		read_segment_header (_f) ||
+	_f && hh_read_dos_head (_f) &&
+		hh_read_NT_head (_f) &&
+		hh_read_segment_header (_f) ||
 		die ("Cannot read file data."
 			 "Unknown error.");
 	// pfile_export  printexporttable (pfile_entity _f);
 	if (! (exp = 
-			printexporttable (_f)))
+			hh_PrintExportTable (_f)))
 		die ("Cannot read import tables."
 			 "Unknown error.");
 	printf ("Export tables %s:\n",
@@ -80,8 +80,8 @@ ez_disp_nt (pfile_entity _f) {
 		opt_size = 0,
 		opt_offset = 0;
 	uint16_t opt_magic = 0;
-	! _f && read_dos_head (_f) && 
-		read_NT_head (_f) || 
+	! _f && hh_read_dos_head (_f) && 
+		hh_read_NT_head (_f) || 
 		die ("Cannot read NT header."
 			 "Unknown error :-("); // im so sorry for this @.o||
 	nt_offset = (int) _f -> _dos_header -> e_lfanew;
@@ -152,7 +152,7 @@ ez_disp_nt (pfile_entity _f) {
 void
 ez_disp_dos (pfile_entity _f) {
 #	define DHD IMAGE_DOS_HEADER
-	! _f && read_dos_head (_f) || 
+	! _f && hh_read_dos_head (_f) || 
 		die ("Cannot read dos header."
 			 "Unknown error :-("); // the same above.
 	println ("DOS header:");
@@ -199,10 +199,10 @@ ez_disp_dos (pfile_entity _f) {
 */
 void
 ez_disp_check (pfile_entity _f) {
-	bool flag = false;
+	int flag = 0;
 	if (! _f) {
-		if (read_dos_head (_f) && 
-				read_NT_head (_f)) {
+		if (hh_read_dos_head (_f) && 
+				hh_read_NT_head (_f)) {
 			flag = 
 				_f -> _dos_header -> e_magic == IMAGE_DOS_SIGNATURE && 
 				_f -> _nt_headers -> Signature == IMAGE_NT_SIGNATURE;
@@ -222,14 +222,14 @@ ez_disp_iat_info (pfile_entity _f) {
 	pfile_import imp = NULL;
 	int imp_num = 0,
 		i = 0;
-	_f && read_dos_head (_f) &&
-		read_NT_head (_f) &&
-		read_segment_header (_f) ||
+	_f && hh_read_dos_head (_f) &&
+		hh_read_NT_head (_f) &&
+		hh_read_segment_header (_f) ||
 		die ("Cannot read file data."
 			 "Unknown error.");
 	// pfile_import read_import_tables (pfile_entity _f);
 	if (! (imp = 
-			read_import_tables (_f, &imp_num)))
+			ez_read_import_tables (_f, &imp_num)))
 		die ("Cannot read import tables."
 			 "Unknown error.");
 	printf ("Import tables, total %d libs:\n",
@@ -265,9 +265,9 @@ ez_disp_arch (pfile_entity _f) {
 			 opt_size = 0,
 			 seg_head_offset = 0;
 	int i = 0;
-	if (read_dos_head (_f) &&
-		read_NT_head (_f) &&
-		read_segment_header (_f)) 
+	if (hh_read_dos_head (_f) &&
+		hh_read_NT_head (_f) &&
+		hh_read_segment_header (_f)) 
 	{
 		// dos header
 		println ("DOS: 0x00 ~ 0x40 (offset)\n");
@@ -333,8 +333,8 @@ ez_disp_help () {
 			version,
 			help_str
 		   );
-	printf ("  %s %s\n", author [0], email [0]);
-	printf ("  %s %s\n", author [1], email [1]);
+	printf ("  %s %s\n", author1, email1);
+	printf ("  %s %s\n", author2, email2 );
 }
 
 

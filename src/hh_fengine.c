@@ -7,9 +7,9 @@ pfile_entity peHeader;  // The header of PE file
 void hh_init(char *fileName)
 {
 	char path[100];
-	strcpy_s(path, fileName, strnlen_s(fileName,256)+1);
+	strcpy(path, fileName);
 	//返回一个可访问的文件句柄
-	hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+	hFile = CreateFile((LPCWSTR) path, GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
@@ -25,8 +25,8 @@ int hh_read_dos_head(pfile_entity dosHeader)
 {
 	if (dosHeader->_dos_header == NULL)
 	{
+		LPDWORD dwRead= (LPDWORD) malloc (sizeof (DWORD));
 		dosHeader->_dos_header = (IMAGE_DOS_HEADER *)malloc(sizeof(IMAGE_DOS_HEADER));
-		LPDWORD dwRead=NULL;
 		//读取DOS头
 		ReadFile(hFile, &(dosHeader->_dos_header), sizeof(dosHeader->_dos_header), dwRead, NULL);
 		if (*dwRead == sizeof(dosHeader->_dos_header))
@@ -38,11 +38,16 @@ int hh_read_dos_head(pfile_entity dosHeader)
 	return sizeof(dosHeader->_dos_header);
 }
 
+pfile_import ez_read_import_tables (pfile_entity _imp, int* _imp_num) {
+
+	return NULL;
+}
+
 int hh_read_NT_head(pfile_entity ntHeader)
 {
 	if (ntHeader->_nt_headers == NULL)
 	{
-		LPDWORD dwRead=NULL;
+		LPDWORD dwRead = (LPDWORD) malloc (sizeof (DWORD));
 		ntHeader->_nt_headers = (IMAGE_NT_HEADERS *)malloc(sizeof(IMAGE_NT_HEADERS));
 		if (peHeader->_dos_header->e_magic == IMAGE_DOS_SIGNATURE)  //是不是有效的DOS头
 		{   //定位NT头
@@ -92,8 +97,10 @@ void hh_desponse(pfile_entity header)
 
 pfile_export hh_PrintExportTable(pfile_entity nt)
 {
+	pfile_export exTable = NULL;
 	if (nt->_nt_headers != NULL)
 	{
+		PIMAGE_EXPORT_DIRECTORY export_directory;
 		DWORD RAWOfExportTable = hh_RVAToRAW(nt->_nt_headers->
 			OptionalHeader.DataDirectory[0].VirtualAddress);
 
@@ -101,23 +108,25 @@ pfile_export hh_PrintExportTable(pfile_entity nt)
 			OptionalHeader.DataDirectory[0].Size;
 
 		//struct export table
-		pfile_export exTable;
+		
 		exTable = (file_export *)malloc(sizeof(file_export));
 
 		// for the function load EXPORT_TABLE
-		PIMAGE_EXPORT_DIRECTORY export_directory;
 		export_directory = (IMAGE_EXPORT_DIRECTORY *)malloc
 			(sizeof(IMAGE_EXPORT_DIRECTORY));
 
 		//select export table section
 		if (SetFilePointer(hFile, RAWOfExportTable, NULL, FILE_BEGIN) != -1)
-		{  //read export table
+		{
+			int i = 0;
+			pthunk export_function;
+			//read export table
 			ReadFile(hFile, &export_directory, sizeOfExportTable, NULL, NULL);
 
 			// struct export function
-			pthunk export_function;
-			export_function = (thunk *)malloc(sizeof(thunk)
-				*export_directory->NumberOfFunctions);
+			
+			export_function = (thunk *) malloc(sizeof(thunk)
+				* export_directory -> NumberOfFunctions);
 
 			exTable->_funcs = export_function;
 
@@ -127,7 +136,7 @@ pfile_export hh_PrintExportTable(pfile_entity nt)
 			exTable->_total_funcs = export_directory->NumberOfFunctions;
 			exTable->_named_funcs = export_directory->NumberOfNames;
 
-			for (int i = 0; i < export_directory->NumberOfFunctions; i++)
+			for (; i < (int) export_directory->NumberOfFunctions; i++)
 			{
 				//load thunk
 				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfFunctions), NULL, FILE_BEGIN) != -1 &&
@@ -138,17 +147,20 @@ pfile_export hh_PrintExportTable(pfile_entity nt)
 					ReadFile(hFile, &export_function->_number._origin, export_directory->NumberOfNames, NULL, NULL);
 			}
 		}
+		return exTable;
 	}
+	return exTable;
 }
 //RVAToRAW
 DWORD hh_RVAToRAW(DWORD virtualAddress)
 {
 	DWORD RAW;
+	int i = 0;
 	//The numbers of section
 	WORD numberOfSections = peHeader->
 		_nt_headers->FileHeader.NumberOfSections;
 
-	for (int i = 0; i < numberOfSections; i++)
+	for (; i < numberOfSections; i++)
 	{
 		if (virtualAddress >= peHeader->_sec_header[i].VirtualAddress&&
 			virtualAddress <= peHeader->_sec_header[i].VirtualAddress +

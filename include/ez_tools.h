@@ -1,6 +1,8 @@
 #ifndef _EZ_TOOLS_H_
 #	define _EZ_TOOLS_H_
 
+#include <stdio.h>
+
 // #	define printlnf(___F, ___S) \
 //		printf (___F, ___S)
 
@@ -14,12 +16,8 @@
 		1;	\
 	})
 #else
-#include <stdbool.h>
-bool die (const char* ___S) {
-	println (___S);
-	exit (0);
-	return 1;
-}
+extern 
+int die (const char*);
 #endif
 
 #ifndef  NULL
