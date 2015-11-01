@@ -4,38 +4,59 @@
 
 HANDLE hFile;  //可访问的文件句柄
 pfile_entity peHeader;  // The header of PE file
-void hh_init(char *fileName)
+
+pfile_entity hh_init (char *fileName)
 {
-	char path[100];
+	char path [100];
 	strcpy(path, fileName);
-	//返回一个可访问的文件句柄
-	hFile = CreateFile((LPCWSTR) path, GENERIC_READ, FILE_SHARE_READ, NULL,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
-	{
-		hFile = NULL;
-		printf("Can not open the file!");
+
+	hFile = CreateFile ((LPCWSTR) path, 
+			GENERIC_READ, FILE_SHARE_READ, NULL,
+			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 
+			NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE) {
+		printf ("Can not open the file!\n");
+		return NULL; 
 	}
-	peHeader->_dos_header = (IMAGE_DOS_HEADER *)malloc(sizeof(IMAGE_DOS_HEADER));
-	peHeader->_nt_headers = (IMAGE_NT_HEADERS *)malloc(sizeof(IMAGE_NT_HEADERS));
-	peHeader->_sec_header = (IMAGE_SECTION_HEADER *)malloc(sizeof(IMAGE_SECTION_HEADER) * 3);
+
+	// for file engine..
+	peHeader = (pfile_entity) calloc (sizeof (file_entity));
+
+	// peHeader->_dos_header = 
+	// 	(IMAGE_DOS_HEADER *) calloc (sizeof(IMAGE_DOS_HEADER));
+
+	// peHeader->_nt_headers = 
+	// 	(IMAGE_NT_HEADERS *) calloc (sizeof(IMAGE_NT_HEADERS));
+
+	return peHeader;
+
+	// peHeader->_sec_header = 
+	// 	(IMAGE_SECTION_HEADER *) malloc (sizeof(IMAGE_SECTION_HEADER));
 }
 
-int hh_read_dos_head(pfile_entity dosHeader)
+
+int hh_read_dos_head (pfile_entity dosHeader)
 {
-	if (dosHeader->_dos_header == NULL)
-	{
-		LPDWORD dwRead= (LPDWORD) malloc (sizeof (DWORD));
-		dosHeader->_dos_header = (IMAGE_DOS_HEADER *)malloc(sizeof(IMAGE_DOS_HEADER));
-		//读取DOS头
-		ReadFile(hFile, &(dosHeader->_dos_header), sizeof(dosHeader->_dos_header), dwRead, NULL);
-		if (*dwRead == sizeof(dosHeader->_dos_header))
-		{
-			peHeader->_dos_header = dosHeader->_dos_header;
-			return *dwRead;
-		}
-	}
-	return sizeof(dosHeader->_dos_header);
+	DWORD dwRead = 0; // = malloc (sizeof (DWORD));
+	int beRead = sizeof (IMAGE_DOS_HEADER);
+
+	if (dosHeader -> _dos_header)
+		return beRead;
+
+	dosHeader -> _dos_header = (PIMAGE_DOS_HEADER) 
+			calloc (beRead);
+
+	if (! dosHeader -> _dos_header)
+		return 0;
+
+	ReadFile (hFile, (dosHeader -> _dos_header), 
+			beRead, &dwRead, NULL);
+
+	if (dwRead == beRead) 
+		return dwRead;
+
+	return 0;
 }
 
 pfile_import ez_read_import_tables (pfile_entity _imp, int* _imp_num) {
@@ -45,54 +66,102 @@ pfile_import ez_read_import_tables (pfile_entity _imp, int* _imp_num) {
 
 int hh_read_NT_head(pfile_entity ntHeader)
 {
-	if (ntHeader->_nt_headers == NULL)
-	{
-		LPDWORD dwRead = (LPDWORD) malloc (sizeof (DWORD));
-		ntHeader->_nt_headers = (IMAGE_NT_HEADERS *)malloc(sizeof(IMAGE_NT_HEADERS));
-		if (peHeader->_dos_header->e_magic == IMAGE_DOS_SIGNATURE)  //是不是有效的DOS头
-		{   //定位NT头
-			if (SetFilePointer(hFile, peHeader->_dos_header->e_lfanew, NULL, FILE_BEGIN) != -1)
-			{  //读取NT头
-				ReadFile(hFile, &ntHeader->_nt_headers, sizeof(ntHeader->_nt_headers), dwRead, NULL);
-				if (*dwRead == sizeof(ntHeader->_nt_headers))
-				{
-					peHeader->_nt_headers = ntHeader->_nt_headers;
-					return *dwRead;
-				}
-			}
-		}
+	DWORD dwRead = 0;
+	int beRead = sizeof (IMAGE_NT_HEADERS);
+	if (ntHeader -> _nt_headers)
+		return beRead;
+
+	ntHeader->_nt_headers = (PIMAGE_NT_HEADERS)
+		calloc(beRead);
+	if (! ntHeader -> _nt_headers)
 		return 0;
+
+	if (hh_read_dos_head (ntHeader) && 
+		peHeader-> _dos_header -> e_magic == 
+			IMAGE_DOS_SIGNATURE)
+	{   //定位NT头
+		if (SetFilePointer (hFile, 
+					peHeader -> _dos_header -> 
+					e_lfanew,
+					NULL, FILE_BEGIN) != -1)
+		{  //读取NT头
+			ReadFile (hFile, 
+					ntHeader -> _nt_headers, 
+					beRead, &dwRead, NULL);
+
+			if (dwRead == beRead)
+				return dwRead;
+		}
 	}
-	return sizeof(ntHeader->_nt_headers);
+
+	return 0;
 }
 
-int hh_read_segment_header(pfile_entity segHeader)
+int hh_read_segment_header (pfile_entity segHeader)
 {
-	if (segHeader->_sec_header == NULL)
-	{
-		LPDWORD dwRead=NULL;
-		segHeader->_sec_header = (IMAGE_SECTION_HEADER *)malloc(sizeof(IMAGE_SECTION_HEADER) * 3);
-		//定位节区头
-		if (SetFilePointer(hFile, peHeader->_dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS), NULL, FILE_BEGIN) != -1)
-		{  //读取节区头
-			ReadFile(hFile, &segHeader->_sec_header, sizeof(IMAGE_SECTION_HEADER) * 3, NULL, NULL);
-			if (*dwRead == sizeof(segHeader->_sec_header))
-			{
-				peHeader->_sec_header = segHeader->_sec_header;
-				return *dwRead;
-			}
-		}
+	int section_hdr_num = 0,
+		tmp = 0,
+		beRead = 0;
+	DWORD dwRead = 0;
+
+	tmp = segHeader -> _nt_header == NULL &&
+		!! hh_read_NT_head (segHeader);
+
+	if (tmp && segHeader -> _nt_header != NULL)
+		section_hdr_num = segHeader -> 
+			_nt_headers -> 
+			FileHeader.NumberOfSections;
+	else
+		return 0; // read NT header error ...
+
+	beRead = sizeof (IMAGE_SECTION_HEADER) * 
+		section_hdr_num;
+
+	if (segHeader -> _sec_header)
+		return beRead;
+	
+	segHeader->_sec_header = 
+		(PIMAGE_SECTION_HEADER) calloc(beRead);
+
+	if (SetFilePointer (hFile, 
+			peHeader -> _dos_header -> 
+			e_lfanew + sizeof (IMAGE_NT_HEADERS), 
+			NULL, FILE_BEGIN) != -1)
+	{  //读取节区头
+		ReadFile (hFile, segHeader -> _sec_header,
+			beRead, NULL, NULL);
+		if (dwRead == beRead)
+			return beRead;
+			// peHeader->_sec_header = segHeader->_sec_header;
 	}
-	return sizeof(segHeader->_sec_header);
+	return 0; // sizeof();
 }
+
+
 void hh_desponse(pfile_entity header)
 {
-	free(header->_dos_header);
-	free(header->_nt_headers);
-	free(header->_sec_header);
-	free(peHeader->_dos_header);
-	free(peHeader->_nt_headers);
-	free(peHeader->_sec_header);
+	if (header) {
+
+		if (header -> _dos_header)
+			free (header -> _dos_header);
+
+		if (header -> _dos_stub)
+			free (header -> _dos_stub);
+
+		if (header -> _nt_headers)
+			free (header -> _nt_headers);
+
+		if (header -> _sec_header)
+			free (header -> _sec_header);
+
+		header -> _dos_header =
+		header -> _nt_headers =
+		header -> _dos_stub   =
+		header -> _sec_header = NULL;
+
+		free (header);
+		header = NULL;
+	}
 }
 
 pfile_export hh_PrintExportTable(pfile_entity nt)
