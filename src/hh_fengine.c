@@ -7,10 +7,20 @@ pfile_entity peHeader;  // The header of PE file
 
 pfile_entity hh_init (char *fileName)
 {
-	char path [100];
-	strcpy(path, fileName);
+	/*char path [100];
+	strcpy (path, fileName);*/
+//#ifdef UNICODE
+//	wchar_t path [100];
+//	size_t n = MultiByteToWideChar (CP_ACP, 0, 
+//		(const char*)fileName, strlen (fileName), NULL, 0);
+//	MultiByteToWideChar (CP_ACP, 0, 
+//		fileName, strlen (fileName), path, n);	
+//#else
+//	char path [100];
+//	strcpy (path, fileName);
+//#endif
 
-	hFile = CreateFile ((LPCWSTR) path, 
+	hFile = CreateFileA (fileName, 
 			GENERIC_READ, FILE_SHARE_READ, NULL,
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 
 			NULL);
@@ -21,7 +31,7 @@ pfile_entity hh_init (char *fileName)
 	}
 
 	// for file engine..
-	peHeader = (pfile_entity) calloc (sizeof (file_entity));
+	peHeader = (pfile_entity) calloc (1, sizeof (file_entity));
 
 	// peHeader->_dos_header = 
 	// 	(IMAGE_DOS_HEADER *) calloc (sizeof(IMAGE_DOS_HEADER));
@@ -45,7 +55,7 @@ int hh_read_dos_head (pfile_entity dosHeader)
 		return beRead;
 
 	dosHeader -> _dos_header = (PIMAGE_DOS_HEADER) 
-			calloc (beRead);
+			calloc (1, beRead);
 
 	if (! dosHeader -> _dos_header)
 		return 0;
@@ -72,7 +82,7 @@ int hh_read_NT_head(pfile_entity ntHeader)
 		return beRead;
 
 	ntHeader->_nt_headers = (PIMAGE_NT_HEADERS)
-		calloc(beRead);
+		calloc(1, beRead);
 	if (! ntHeader -> _nt_headers)
 		return 0;
 
@@ -104,10 +114,10 @@ int hh_read_segment_header (pfile_entity segHeader)
 		beRead = 0;
 	DWORD dwRead = 0;
 
-	tmp = segHeader -> _nt_header == NULL &&
+	tmp = segHeader -> _nt_headers == NULL ||
 		!! hh_read_NT_head (segHeader);
 
-	if (tmp && segHeader -> _nt_header != NULL)
+	if (tmp && segHeader -> _nt_headers != NULL)
 		section_hdr_num = segHeader -> 
 			_nt_headers -> 
 			FileHeader.NumberOfSections;
@@ -121,7 +131,7 @@ int hh_read_segment_header (pfile_entity segHeader)
 		return beRead;
 	
 	segHeader->_sec_header = 
-		(PIMAGE_SECTION_HEADER) calloc(beRead);
+		(PIMAGE_SECTION_HEADER) calloc(1, beRead);
 
 	if (SetFilePointer (hFile, 
 			peHeader -> _dos_header -> 
@@ -129,7 +139,7 @@ int hh_read_segment_header (pfile_entity segHeader)
 			NULL, FILE_BEGIN) != -1)
 	{  //读取节区头
 		ReadFile (hFile, segHeader -> _sec_header,
-			beRead, NULL, NULL);
+			beRead, &dwRead, NULL);
 		if (dwRead == beRead)
 			return beRead;
 			// peHeader->_sec_header = segHeader->_sec_header;
@@ -154,9 +164,9 @@ void hh_desponse(pfile_entity header)
 		if (header -> _sec_header)
 			free (header -> _sec_header);
 
-		header -> _dos_header =
-		header -> _nt_headers =
-		header -> _dos_stub   =
+		header -> _dos_header = NULL;
+		header -> _nt_headers = NULL;
+		header -> _dos_stub   = NULL;
 		header -> _sec_header = NULL;
 
 		free (header);

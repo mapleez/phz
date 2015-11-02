@@ -2,7 +2,7 @@
 #  define _HH_FENGINE_H_
 
 #include "ez_file_entity.h"
-#ifdef _MSC_VER_
+#ifdef _MSC_VER
 #include "windows.h"
 #else
 #error "This program cannot compile under this platform :("

@@ -6,17 +6,18 @@
 #	define println(___S) \
 		printf ("%s\n", ___S)
 
-#if defined (_WIN32) || defined (__cplusplus)
-#	define die(___S) ({	\
-		println (___S);	\
-		exit (0); \
-		1;	\
-	})
-#else
+//#if !defined (_WIN32) || !defined (__cplusplus)
+//#	define die(___S) ({	\
+//		println (___S);	\
+//		exit (0); \
+//		1;	\
+//	})
+//#else
 
 extern 
 int die (const char*);
-#endif
+
+// #endif
 
 #ifndef  NULL
 #	define NULL ((void*)0)

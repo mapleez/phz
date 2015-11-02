@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #ifndef __cplusplus
-#include <stdbool.h>
+#include "stdbool.h"
 #endif
 
 #include <stddef.h>
@@ -198,7 +198,7 @@ ez_disp_dos (pfile_entity _f) {
 void
 ez_disp_check (pfile_entity _f) {
 	int flag = 0;
-	if (! _f) {
+	if (_f) {
 		if (hh_read_dos_head (_f) && 
 				hh_read_NT_head (_f)) {
 			flag = 
