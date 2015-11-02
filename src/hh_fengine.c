@@ -1,9 +1,15 @@
 #include "hh_fengine.h"
 #include "stdio.h"
-#include "windows.h"
+
+#if defined _MSC_VER || defined __MINGW32__
+#include <windows.h>
+#else
+#error "This version only support winNT platform."
+#endif // ~ _MSC_VER
 
 HANDLE hFile;  //可访问的文件句柄
 pfile_entity peHeader;  // The header of PE file
+char* funcNameBlock;
 
 pfile_entity hh_init (char *fileName)
 {
@@ -181,58 +187,176 @@ void hh_desponse(pfile_entity header)
 pfile_export hh_PrintExportTable(pfile_entity nt)
 {
 	pfile_export exTable = NULL;
-	if (nt->_nt_headers != NULL)
+	nt -> _nt_headers == NULL &&
+		hh_read_NT_header (nt);
+
+	// if (nt -> _nt_headers != NULL)
+	// {
+	PIMAGE_EXPORT_DIRECTORY export_directory;
+
+	// RAW
+	DWORD RAWOfExportTable = 
+		hh_RVAToRAW (nt -> _nt_headers ->
+		OptionalHeader.DataDirectory [0].
+		VirtualAddress);
+	// size
+	DWORD sizeOfExportTable = nt -> 
+		_nt_headers->
+		OptionalHeader.DataDirectory [0].Size;
+
+	//struct export table
+	exTable = (pfile_export) 
+		calloc (1, sizeof(file_export));
+
+	// for the function load EXPORT_TABLE
+	export_directory = 
+		(PIMAGE_EXPORT_DIRECTORY ) calloc
+		(sizeof (IMAGE_EXPORT_DIRECTORY));
+
+	// select export table section
+	if (SetFilePointer (hFile, 
+				RAWOfExportTable, NULL, 
+				FILE_BEGIN) != -1)
 	{
-		PIMAGE_EXPORT_DIRECTORY export_directory;
-		DWORD RAWOfExportTable = hh_RVAToRAW(nt->_nt_headers->
-			OptionalHeader.DataDirectory[0].VirtualAddress);
+		int i = 0;
+		int tmp = 0;
+		// name address(RVA) array
+		DWORD* name_addr_arr = NULL;
+		DWORD dwRead = 0;
+		uint16_t* ordinals = NULL;
+		pthunk export_function;
+		//read export table
+		ReadFile (hFile, &export_directory, 
+			sizeOfExportTable, &dwRead, NULL);
 
-		DWORD sizeOfExportTable = nt->_nt_headers->
-			OptionalHeader.DataDirectory[0].Size;
+		// struct export function
+		export_function = 
+			exTable -> _funcs = (pthunk) 
+			calloc (export_directory -> 
+			NumberOfFunctions, sizeof (thunk));
 
-		//struct export table
-		exTable = (file_export *)malloc(sizeof(file_export));
+		//load export table 
+		SetFilePointer (hFile, 
+		 hh_RVAToRAW (export_directory->Name), 
+		 NULL, FILE_BEGIN) != -1 && 
+			ReadFile (hFile, &exTable->_name, 
+					40, NULL, NULL);
 
-		// for the function load EXPORT_TABLE
-		export_directory = (IMAGE_EXPORT_DIRECTORY *)malloc
-			(sizeof(IMAGE_EXPORT_DIRECTORY));
+		exTable -> _total_funcs = 
+			export_directory -> 
+			NumberOfFunctions;
 
-		//select export table section
-		if (SetFilePointer(hFile, RAWOfExportTable, NULL, FILE_BEGIN) != -1)
+		exTable -> _named_funcs = 
+			export_directory -> NumberOfNames;
+
+		// read function Address
+		export_function -> _func_addr = 
+			(pthunk) malloc (tmp = 
+					export_direcotyr -> 
+					NumberOfFunctions * 4);
+
+		SetFilePointer (hFile,
+		 hh_RVAToRAW (export_directory ->
+			 AddressOfFunctions), NULL,
+		 FILE_BEGIN) != -1 && 
+			ReadFile (hFile,
+					export_function ->
+						_func_addr,
+					tmp, // func_cnt * len
+					&dwRead, NULL);
+
+		// read name string addr array
+		name_addr_arr = (DWORD*)
+			calloc (export_directory ->
+				NumberOfFunctions, 
+				   sizeof (DWORD));
+		tmp = export_directory -> 
+			NumberOfFunctions;
+		SetFilePointer (hFile,
+		 hh_RVAToRAW (export_directory ->
+			 AddressOfNames), NULL,
+		 FILE_BEGIN) != -1 && 
+			ReadFile (hFile,
+					name_addr_arr,
+					tmp, // func_cnt * len
+					&dwRead, NULL);
+
+		// read ordinals
+		ordinals = (uint16_t*) 
+			calloc (exTable ->
+					_total_funcs, 2);
+		tmp = exTable -> _total_funcs * 2;
+		SetFilePointer (hFile,
+		 hh_RVAToRAW (export_directory ->
+			 AddressOfNameOrdinals), NULL,
+		 FILE_BEGIN) != -1 && 
+			ReadFile (hFile,
+					ordinals,
+					tmp, 
+					&dwRead, NULL);
+
+		// read name string
+		for (; i < export_direcotyr ->
+				NumberOfFunctions; ++ i)
 		{
-			int i = 0;
-			pthunk export_function;
-			//read export table
-			ReadFile(hFile, &export_directory, sizeOfExportTable, NULL, NULL);
-
-			// struct export function
-			
-			export_function = (thunk *) malloc(sizeof(thunk)
-				* export_directory -> NumberOfFunctions);
-
-			exTable->_funcs = export_function;
-
-			//load export table 
-			SetFilePointer(hFile, hh_RVAToRAW(export_directory->Name), NULL, FILE_BEGIN) != -1 && 
-				ReadFile(hFile, &exTable->_name, 40, NULL, NULL);
-			exTable->_total_funcs = export_directory->NumberOfFunctions;
-			exTable->_named_funcs = export_directory->NumberOfNames;
-
-			for (; i < (int) export_directory->NumberOfFunctions; i++)
-			{
-				//load thunk
-				SetFilePointer (hFile, hh_RVAToRAW(export_directory->AddressOfFunctions), NULL, FILE_BEGIN) != -1 &&
-					ReadFile (hFile, &export_function->_func_addr, export_directory->NumberOfFunctions, NULL, NULL);
-				SetFilePointer (hFile, hh_RVAToRAW(export_directory->AddressOfNames), NULL, FILE_BEGIN) != -1 &&
-					ReadFile (hFile, &export_function->_func_name, export_directory->NumberOfNames, NULL, NULL);
-				SetFilePointer (hFile, hh_RVAToRAW(export_directory->AddressOfNameOrdinals), NULL, FILE_BEGIN) != -1 &&
-					ReadFile (hFile, &export_function->_number._origin, export_directory->NumberOfNames, NULL, NULL);
-			}
+			export_function [i]._func_name = 
+				(uint8_t*) calloc (1, 48);
+			SetFilePointer (hFile,
+			 hh_RVAToRAW (name_addr_arr [i]), 
+			 NULL, FILE_BEGIN) != -1 && 
+				ReadFile (hFile,
+						export_function [i].
+							_func_name,
+						48, 
+						&dwRead, NULL);
 		}
+
+		// error below.
+		/*
+		for (; i < exTable -> _total_funcs; 
+				i++)
+		{
+			//load thunk
+			SetFilePointer (hFile, 
+			 hh_RVAToRAW (export_directory ->
+				 AddressOfFunctions), NULL,
+			 FILE_BEGIN) != -1 &&
+				ReadFile (hFile, 
+						&export_function ->
+							_func_addr, 
+						export_directory ->
+							NumberOfFunctions, 
+						NULL, NULL);
+
+			SetFilePointer (hFile, 
+			 hh_RVAToRAW (export_directory ->
+				 AddressOfNames), NULL, 
+			 FILE_BEGIN) != -1 &&
+				ReadFile (hFile, 
+						&export_function ->
+						_func_name, 
+						export_directory ->
+						NumberOfNames, 
+						NULL, NULL);
+
+			SetFilePointer (hFile, 
+			 hh_RVAToRAW (export_directory ->
+				 AddressOfNameOrdinals), NULL, 
+			 FILE_BEGIN) != -1 &&
+				ReadFile (hFile, 
+						&export_function ->
+						_number._origin, 
+						export_directory ->
+						NumberOfNames, 
+						NULL, NULL);
+		}
+		*/
 		return exTable;
 	}
-	return exTable;
+	// }
+	return NULL;
 }
+
 //RVAToRAW
 DWORD hh_RVAToRAW(DWORD virtualAddress)
 {

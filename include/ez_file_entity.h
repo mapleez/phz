@@ -10,7 +10,12 @@
  *			structures.
 */
 
+#if defined _MSC_VER || defined __MINGW32__
 #include <windows.h>
+#else
+#error "This version only support winNT platform."
+#endif // ~ _MSC_VER
+
 #include <stdint.h>
 
 typedef struct _file_entity {
