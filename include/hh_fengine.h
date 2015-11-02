@@ -5,7 +5,7 @@
 #ifdef _MSC_VER
 #include "windows.h"
 #else
-#error "This program cannot compile under this platform :("
+#error "This program cannot compile under your platform :("
 #endif // ~ _MSC_VER_
 
 /*
@@ -59,7 +59,7 @@ int hh_read_segment_header (pfile_entity);
 
 /*
    Despite the argument, the file engine;
-   If @1 ptr is NULL, nothing will be done 
+   The argument is out of usage :-(
    for it, Else its members will be disposed.
 */
 extern

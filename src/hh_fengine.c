@@ -147,31 +147,35 @@ int hh_read_segment_header (pfile_entity segHeader)
 	return 0; // sizeof();
 }
 
-
+/*
+   the argument is out of usage :-(
+*/
 void hh_desponse(pfile_entity header)
 {
-	if (header) {
+	if (peHeader) {
 
-		if (header -> _dos_header)
-			free (header -> _dos_header);
+		if (peHeader -> _dos_header)
+			free (peHeader -> _dos_header);
 
-		if (header -> _dos_stub)
-			free (header -> _dos_stub);
+		if (peHeader -> _dos_stub)
+			free (peHeader -> _dos_stub);
 
-		if (header -> _nt_headers)
-			free (header -> _nt_headers);
+		if (peHeader -> _nt_headers)
+			free (peHeader -> _nt_headers);
 
-		if (header -> _sec_header)
-			free (header -> _sec_header);
+		if (peHeader -> _sec_header)
+			free (peHeader -> _sec_header);
 
-		header -> _dos_header = NULL;
-		header -> _nt_headers = NULL;
-		header -> _dos_stub   = NULL;
-		header -> _sec_header = NULL;
+		peHeader -> _dos_header = NULL;
+		peHeader -> _nt_headers = NULL;
+		peHeader -> _dos_stub   = NULL;
+		peHeader -> _sec_header = NULL;
 
-		free (header);
-		header = NULL;
+		free (peHeader);
+		peHeader = NULL;
 	}
+
+	if (hFile != INVALID_HANDLE_VALUE) CloseHandle (hFile);
 }
 
 pfile_export hh_PrintExportTable(pfile_entity nt)
@@ -187,7 +191,6 @@ pfile_export hh_PrintExportTable(pfile_entity nt)
 			OptionalHeader.DataDirectory[0].Size;
 
 		//struct export table
-		
 		exTable = (file_export *)malloc(sizeof(file_export));
 
 		// for the function load EXPORT_TABLE
@@ -218,12 +221,12 @@ pfile_export hh_PrintExportTable(pfile_entity nt)
 			for (; i < (int) export_directory->NumberOfFunctions; i++)
 			{
 				//load thunk
-				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfFunctions), NULL, FILE_BEGIN) != -1 &&
-					ReadFile(hFile, &export_function->_func_addr, export_directory->NumberOfFunctions, NULL, NULL);
-				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfNames), NULL, FILE_BEGIN) != -1 &&
-					ReadFile(hFile, &export_function->_func_name, export_directory->NumberOfNames, NULL, NULL);
-				SetFilePointer(hFile, hh_RVAToRAW(export_directory->AddressOfNameOrdinals), NULL, FILE_BEGIN) != -1 &&
-					ReadFile(hFile, &export_function->_number._origin, export_directory->NumberOfNames, NULL, NULL);
+				SetFilePointer (hFile, hh_RVAToRAW(export_directory->AddressOfFunctions), NULL, FILE_BEGIN) != -1 &&
+					ReadFile (hFile, &export_function->_func_addr, export_directory->NumberOfFunctions, NULL, NULL);
+				SetFilePointer (hFile, hh_RVAToRAW(export_directory->AddressOfNames), NULL, FILE_BEGIN) != -1 &&
+					ReadFile (hFile, &export_function->_func_name, export_directory->NumberOfNames, NULL, NULL);
+				SetFilePointer (hFile, hh_RVAToRAW(export_directory->AddressOfNameOrdinals), NULL, FILE_BEGIN) != -1 &&
+					ReadFile (hFile, &export_function->_number._origin, export_directory->NumberOfNames, NULL, NULL);
 			}
 		}
 		return exTable;

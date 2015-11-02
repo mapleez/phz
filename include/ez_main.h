@@ -18,6 +18,7 @@
    getopt string
 */
 // const char* ez_arg_string = "aCehis";
+
 #	define ez_arg_string  "aCehis"
 
 /*

@@ -77,7 +77,7 @@ ez_disp_nt (pfile_entity _f) {
 		opt_size = 0,
 		opt_offset = 0;
 	uint16_t opt_magic = 0;
-	! _f && hh_read_dos_head (_f) && 
+	_f && hh_read_dos_head (_f) && 
 		hh_read_NT_head (_f) || 
 		die ("Cannot read NT header."
 			 "Unknown error :-("); // im so sorry for this @.o||
@@ -150,7 +150,7 @@ ez_disp_nt (pfile_entity _f) {
 void
 ez_disp_dos (pfile_entity _f) {
 #	define DHD IMAGE_DOS_HEADER
-	! _f && hh_read_dos_head (_f) || 
+	_f && hh_read_dos_head (_f) || 
 		die ("Cannot read dos header."
 			 "Unknown error :-("); // the same above.
 	println ("DOS header:");
@@ -207,8 +207,8 @@ ez_disp_check (pfile_entity _f) {
 		}
 	}
 
-	printf ("We checked the file %s\n", 
-			flag ? "true" : "false");
+	printf ("We've checked the file is%s PE format.\n", 
+			flag ? "" : " not");
 }
 
 
